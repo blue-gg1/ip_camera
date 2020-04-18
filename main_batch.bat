@@ -22,7 +22,7 @@ type b64.txt
 set /p filetime64=<b64.txt
 goto photo
 :photo
-wget.exe http://192.168.1.36:8080/photoaf.jpg
+wget.exe http://127.0.0.1:8080/photoaf.jpg
 mv photoaf.jpg %filenamelong64%.jpg
 goto uploadphoto
 :uploadphoto
