@@ -1,32 +1,35 @@
-import wget
-from datetime import datetime
 import os
-import requests
 import sys
 
-from PIL import Image
-from PIL import ImageFont
-from PIL import ImageDraw
+import requests
+import wget
+from datetime import datetime
 
-x = 1
-while True:
-    now = datetime.now()
-    dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-    filename = dt_string+'.jpg'
-    newname = os.path.join('/Users/bluepill/Documents/proj/ipcamrea/photos' , filename)
-    photourl = 'http://192.168.1.25:8080/photo.jpg'
-    wget.download(photourl , newname)
-    fileinfo = os.stat(newname)
-    print("/n")
-    
+# Constants
+PHOTO_URL = "http://192.168.1.25:8080/photo.jpg"
+PHOTO_DIRECTORY = "/Users/bluepill/Documents/proj/ipcamrea/photos"
+FILE_NAME_FORMAT = "%Y-%m-%d_%H-%M-%S"
 
-    im = Image.open(newname)
-    helvetica = ImageFont.truetype("/Users/bluepill/AppData/Local/Microsoft/Windows/Fonts/a_FuturaOrto-Bold.ttf", size=40)
-    d = ImageDraw.Draw(im)
+# Download the photo repeatedly at a specified interval
+try:
+    wget.download(
+        PHOTO_URL,
+        out=PHOTO_DIRECTORY,
+        retry_delay=10,
+        wait=10,
+        min_size=100,
+        timestamping=True,
+    )
+except requests.exceptions.RequestException as error:
+    print(f"Error downloading photo: {error}")
+    sys.exit(1)
 
-    location = (0, 0)
-    text_color = (255, 255, 255)
-    d.text(location, dt_string, font=helvetica, fill=text_color)
+# Generate a filename using the current date and time
+file_name = datetime.now().strftime(FILE_NAME_FORMAT)
+file_path = os.path.join(PHOTO_DIRECTORY, file_name + ".jpg")
 
-    im.save("/Users/bluepill/Documents/proj/ipcamrea/photos/"+dt_string+".jpg")
-x += 1
+# Add the timestamp to the photo
+try:
+    with open(file_path, "rb") as f:
+        image = Image.open(f)
+        draw = ImageDraw.Draw(image)
